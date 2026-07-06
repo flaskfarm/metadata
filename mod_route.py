@@ -1,7 +1,10 @@
+import os
+import time
 import requests
+import traceback
 from urllib.parse import unquote_plus
 from support_site import SupportWavve, SiteUtilAv, SiteUtil
-from flask import request, send_file, redirect, abort, Response
+from flask import request, send_file, redirect, abort, Response, send_from_directory, current_app
 from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 
@@ -12,8 +15,45 @@ class ModuleRoute(PluginModuleBase):
 
     def __init__(self, P):
         super(ModuleRoute, self).__init__(P, name='route')
-    
-    
+
+
+    def plugin_load(self):
+        try:
+            app = F.app 
+            
+            rule_exists = False
+            for rule in app.url_map.iter_rules():
+                if rule.rule == '/images/<path:filename>':
+                    rule_exists = True
+                    break
+            
+            if not rule_exists:
+                def serve_global_images(filename):
+                    try:
+                        image_root_dir = os.path.join(path_data, 'images')
+                        abs_target_path = os.path.abspath(os.path.join(image_root_dir, filename))
+                        
+                        if os.path.commonpath([image_root_dir, abs_target_path]) == image_root_dir:
+                            if os.path.exists(abs_target_path):
+                                return send_from_directory(image_root_dir, filename)
+                            else:
+                                abort(404)
+                        else:
+                            abort(403)
+                    except Exception as e:
+                        logger.error(f"Global Image Route Error: {e}")
+                        abort(500)
+                
+                app.add_url_rule('/images/<path:filename>', 'serve_global_images', serve_global_images, methods=['GET'])
+                logger.info("[Metadata] Successfully injected global route '/images' into Flask Core.")
+            else:
+                logger.debug("[Metadata] Global route '/images' already exists in Flask Core. Injection skipped.")
+                
+        except Exception as e_inject:
+            logger.error(f"[Metadata] Failed to inject global image route: {e_inject}")
+            logger.error(traceback.format_exc())
+
+
     def process_normal(self, sub, req):
         try:
             if sub == 'image_process.jpg':
