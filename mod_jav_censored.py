@@ -840,7 +840,10 @@ class ModuleJavCensored(PluginModuleBase):
             label_prio_flag_sort_val = 0 if item_for_final_sort.get('is_priority_label_site') else 1
             adj_score = -item_for_final_sort.get("adjusted_score", 0) 
             prio_val = get_priority_value_for_sort(item_for_final_sort)
-            return (label_prio_flag_sort_val, adj_score, prio_val)
+            # 1순위: 점수 (절대적 기준, 무조건 높은 점수가 1등)
+            # 2순위: 지정 레이블 우선권 (MGS 강제 매칭 등 동점자 발생 시 1위 탈환용)
+            # 3순위: 글로벌 사이트 정렬 순서
+            return (adj_score, label_prio_flag_sort_val, prio_val)
 
         sorted_results_after_priority = sorted(all_results, key=get_custom_sort_key_for_final)
         # logger.debug("--- Custom Priority Sort (with Label Priority Flag) END ---")
