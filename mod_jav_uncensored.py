@@ -482,7 +482,7 @@ class ModuleJavUncensored(PluginModuleBase):
     ################################################
     # region INFO
 
-    def info(self, code, fp_meta_mode=False):
+    def info(self, code, fp_meta_mode=False, skip_trans=False):
         censored_module = P.get_module('jav_censored')
         ret = None
 
@@ -494,7 +494,7 @@ class ModuleJavUncensored(PluginModuleBase):
                 break
 
         if target_instance:
-            res = target_instance.info(code, fp_meta_mode=fp_meta_mode)
+            res = target_instance.info(code, fp_meta_mode=fp_meta_mode, skip_trans=skip_trans)
             if res and res['ret'] == 'success':
                 ret = res['data']
         else:

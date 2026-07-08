@@ -341,7 +341,7 @@ class ModuleWestern(PluginModuleBase):
         return None
 
 
-    def info(self, code, keyword=None, fp_meta_mode=False):
+    def info(self, code, keyword=None, fp_meta_mode=False, skip_trans=False):
         if code[0] != 'W':
             logger.error(f"[{self.name}] 처리할 수 없는 코드: {code}")
             return None
@@ -353,7 +353,7 @@ class ModuleWestern(PluginModuleBase):
         
         data = None
         try:
-            data = SiteClass.info(code, fp_meta_mode=fp_meta_mode)
+            data = SiteClass.info(code, fp_meta_mode=fp_meta_mode, skip_trans=skip_trans)
         except Exception as e:
             logger.exception(f"[{self.name}] Info 조회 중 오류: {e}")
             return None
