@@ -801,20 +801,45 @@ class ModuleJavCensored(PluginModuleBase):
                             
                             for b_item in backups:
                                 try:
-                                    logger.debug(f"Pre-fetching images from {b_item['site_key']}...")
-                                    # is_validating=False 로 정상 실행하여 이미지를 실제 로컬 하드에 저장시킴
-                                    self.info2(b_item['code'], b_item['site_key'], keyword, skip_trans=True, is_validating=False)
-                                    backup_success = True
-                                    break
+                                    logger.debug(f"Pre-fetching and validating images from backup site: {b_item['site_key']}...")
+                                    
+                                    b_info_data = self.info2(b_item['code'], b_item['site_key'], keyword, skip_trans=True, is_validating=True)
+                                    b_target_url = None
+                                    if b_info_data:
+                                        for thumb in b_info_data.get('thumb', []):
+                                            if thumb.get('aspect') == 'poster': b_target_url = thumb.get('value'); break
+                                        if not b_target_url:
+                                            for thumb in b_info_data.get('thumb', []):
+                                                if thumb.get('aspect') == 'landscape': b_target_url = thumb.get('value'); break
+
+                                    is_b_fake = True
+                                    if b_target_url:
+                                        B_SiteClass = self.site_map.get(b_item['site_key'])
+                                        im_b_obj = B_SiteClass.imopen(b_target_url)
+                                        if im_b_obj:
+                                            try:
+                                                is_b_fake = B_SiteClass.is_placeholder_image(im_b_obj)
+                                            finally:
+                                                im_b_obj.close()
+                                                
+                                    if not is_b_fake:
+                                        logger.debug(f"Valid real image found on {b_item['site_key']}! Starting full pre-fetch...")
+                                        self.info2(b_item['code'], b_item['site_key'], keyword, skip_trans=True, is_validating=False)
+                                        backup_success = True
+                                        break
+                                    else:
+                                        logger.debug(f"Fake/Placeholder image detected on {b_item['site_key']}. Moving to next backup site...")
+                                        
                                 except Exception as e_res:
                                     logger.debug(f"Pre-fetch failed on {b_item['site_key']}: {e_res}")
                             
                             if backup_success:
                                 item_to_update['hq_poster_score_adj'] = 0
-                                # 구출 성공 플래그 캐시에 저장
                                 try: self.keyword_cache.set(f"RESCUED_{code}", "1")
                                 except AttributeError: self.keyword_cache[f"RESCUED_{code}"] = "1"
-                                logger.info(f"Rescue SUCCESS: Images pre-fetched to local server. Penalty voided.")
+                                logger.info(f"Rescue SUCCESS: Valid images pre-fetched to local server. Penalty voided.")
+                            else:
+                                logger.warning(f"Rescue FAILED: All backup sites returned fake/dead images for {ui_code}. Penalty remains.")
 
         # --- 5. 점수 조정 및 정렬 ---
         for item_adj_score in all_results:
