@@ -14,6 +14,7 @@ class ModuleFtv(PluginModuleBase):
         'ftv_option_actor' : 'tmdb', # [['tmdb, 'tmdb 정보 우선. 매칭된 배우만 한글적용'], ['change_daum', '국내 사이트 정보로 전부 대체'], ['tmdb_match', 'tmdb 정보 우선. 매칭된 배우만 한글적용 후 앞으로 배치'], ['tmdb_match_append_daum', 'tmdb 정보 우선. 매칭된 배우만 한글적용 후 앞으로 배치. 남은 국내정보 추가']] 
         'ftv_use_extra_season' : 'True',
         'ftv_use_extra_video' : 'True',
+        'ftv_use_trailer' : 'False',
         'ftv_use_meta_server' : 'True',
         'ftv_season_order' : 'wavve, tving, daum',
         'ftv_translate_option' : 'text',
@@ -142,7 +143,12 @@ class ModuleFtv(PluginModuleBase):
             tmp = code.split('_')
             if len(tmp) == 1:
                 SiteClass = self.module_map2[code[1]]
-                info = SiteClass.info(code)
+                use_trailer = P.ModelSetting.get_bool('ftv_use_trailer')
+
+                if SiteClass == SiteTmdbFtv:
+                    info = SiteClass.info(code, use_trailer=use_trailer)
+                else:
+                    info = SiteClass.info(code)
                 #info = SiteTmdbFtv.info(code)
                 if info['ret'] != 'success':
                     return
@@ -474,4 +480,3 @@ class ModuleFtv(PluginModuleBase):
     
     def get_cache_info(self):
         return 'my : %s / server : %s' % (len(self.memory_cache['my'].keys()), len(self.memory_cache['server'].keys()) )
-
