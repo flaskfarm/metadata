@@ -18,6 +18,7 @@
 {{ macros.setting_input_text('ftv_season_order', '에피소드 정보 우선순위', value=arg['ftv_season_order'], desc=['메타서버에 사이트 정보가 여러개 있는 경우 적용할 우선순위', 'wavve, tving, daum 등']) }}
 </div>
 {{ macros.m_hr() }}
+{{ macros.setting_checkbox('ftv_use_trailer', 'TMDB 예고편 수집', value=arg['ftv_use_trailer'], desc=['On : TMDB videos에서 예고편 정보를 수집합니다.', '기본 Off. Plex에서는 사용하지 않습니다.']) }}
 {{ macros.setting_radio_with_value('ftv_translate_option', '번역', [['none', '번역하지 않음'], ['text', '줄거리만'], ['all', '배우 이름,역할 포함 전부']], value=arg['ftv_translate_option'], desc=None) }}
 {{ macros.setting_checkbox('ftv_use_theme', '테마 음악 적용', value=arg['ftv_use_theme'], desc=['On : 테마 음악이 있는 경우 적용. 적용시 메타용량 증가']) }}
 

@@ -10,6 +10,7 @@ class ModuleMovie(PluginModuleBase):
         'movie_first_order' : 'tmdb, watcha',
         'movie_use_sub_tmdb' : 'all', # [['all,'모두 사용'], ['except_daum', 'Daum은 사용 안함'], ['none', '사용 안함']]
         'movie_use_sub_tmdb_mode' : 'all', #[['all', '모두 사용'], ['art, 'Art만'], ['actor','배우정보']]
+        'movie_use_trailer' : 'False',
         'movie_use_watcha' : 'True',
         'movie_use_watcha_option' : 'all', # [['all', '모두 사용'], ['review','리뷰만'], ['collection', '컬렉션만']]
         'movie_use_watcha_collection_like_count' : '100',
@@ -205,7 +206,11 @@ class ModuleMovie(PluginModuleBase):
                 tmp = SiteClass.info(code, like_count=P.ModelSetting.get_int('movie_use_watcha_collection_like_count'))
                 watcha_info = tmp['data']
             else:
-                tmp = SiteClass.info(code)
+                use_trailer = P.ModelSetting.get_bool('movie_use_trailer')
+                if SiteClass == SiteTmdbMovie:
+                    tmp = SiteClass.info(code, use_trailer=use_trailer)
+                else:
+                    tmp = SiteClass.info(code)
 
 
             if tmp['ret'] == 'success':
@@ -242,12 +247,12 @@ class ModuleMovie(PluginModuleBase):
                                 else:
                                     break
                             if count == 1:
-                                tmdb_data = SiteTmdbMovie.info(tmdb_search['data'][0]['code'])
+                                tmdb_data = SiteTmdbMovie.info(tmdb_search['data'][0]['code'], use_trailer=P.ModelSetting.get_bool('movie_use_trailer'))
                                 if tmdb_data['ret'] == 'success':
                                     tmdb_info = tmdb_data['data']
                             if count == 0:
                                 if tmdb_search['data'][0]['score'] > 85 or ('title_en' in info['extra_info'] and SiteUtil.compare(info['extra_info']['title_en'], tmdb_search['data'][0]['originaltitle'])):
-                                    tmdb_data = SiteTmdbMovie.info(tmdb_search['data'][0]['code'])
+                                    tmdb_data = SiteTmdbMovie.info(tmdb_search['data'][0]['code'], use_trailer=P.ModelSetting.get_bool('movie_use_trailer'))
                                     if tmdb_data['ret'] == 'success':
                                         tmdb_info = tmdb_data['data']
                         if tmdb_info is not None:
