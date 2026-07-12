@@ -760,7 +760,7 @@ class ModuleJavCensored(PluginModuleBase):
             label_prio_flag_sort_val = 0 if item_for_final_sort.get('is_priority_label_site') else 1
             adj_score = -item_for_final_sort.get("original_score", 0) 
             prio_val = get_priority_value_for_sort(item_for_final_sort)
-            return (label_prio_flag_sort_val, adj_score, prio_val)
+            return (adj_score, label_prio_flag_sort_val, prio_val)
 
         all_results_sorted = sorted(all_results, key=get_custom_sort_key_for_final)
 
