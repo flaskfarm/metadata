@@ -805,7 +805,7 @@ class ModuleJavCensored(PluginModuleBase):
 
                 # B. 검증 실패 시 구출(Pre-fetch) 또는 페널티 처리
                 if not is_image_valid:
-                    logger.info(f"Validity Check FAILED for {code}.")
+                    logger.warning(f"Validity Check FAILED for {code}.")
                     penalty_applied = True # 기본적으로 페널티를 매김
                     
                     if image_mode == 'image_server':
@@ -854,6 +854,11 @@ class ModuleJavCensored(PluginModuleBase):
                         if backup_success:
                             logger.info(f"Rescue SUCCESS: Valid images pre-fetched to local server. Penalty voided.")
                             penalty_applied = False
+
+                            try:
+                                self.keyword_cache.set(f"RESCUED_{code}", "1")
+                            except AttributeError:
+                                self.keyword_cache[f"RESCUED_{code}"] = "1"
 
                     # C. 구출 불가능(또는 실패) 시 점수를 깎고 2차(최종) 재정렬 수행
                     if penalty_applied:
