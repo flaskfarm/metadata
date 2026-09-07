@@ -396,6 +396,9 @@ class ModuleMovie(PluginModuleBase):
                         max_art = _['score']
             if info['mpaa'] == None or info['mpaa'] == '':
                 info['mpaa'] = '-'
+            for actor in info.get('actor', []):
+                if isinstance(actor, dict) and not actor.get('name'):
+                    actor['name'] = actor.get('name_ko') or actor.get('name_org') or ''
             return info
 
 
@@ -432,10 +435,10 @@ class ModuleMovie(PluginModuleBase):
         if len(portal_info) == 0:
             return
         for tmdb in tmdb_info:
-            #logger.debug(tmdb['name'])
+            tmdb_name = tmdb.get('name') or tmdb.get('name_ko') or tmdb.get('name_org')
             for portal in portal_info:
-                #logger.debug(portal['originalname'])
-                if tmdb['name'] == portal['originalname']:
-                    tmdb['name'] = portal['name']
-                    tmdb['role'] = portal['role']
+                portal_orig = portal.get('originalname') or portal.get('name_org') or portal.get('name')
+                if tmdb_name and tmdb_name == portal_orig:
+                    tmdb['name'] = portal.get('name') or portal.get('name_ko') or ''
+                    tmdb['role'] = portal.get('role', '')
                     break
