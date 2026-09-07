@@ -397,8 +397,8 @@ class ModuleMovie(PluginModuleBase):
             if info['mpaa'] == None or info['mpaa'] == '':
                 info['mpaa'] = '-'
             for actor in info.get('actor', []):
-                if isinstance(actor, dict) and not actor.get('name'):
-                    actor['name'] = actor.get('name_ko') or actor.get('name_org') or ''
+                if isinstance(actor, dict):
+                    actor['name'] = actor.get('name_ko') or actor.get('name_org') or actor.get('name', '')
             return info
 
 
@@ -421,12 +421,16 @@ class ModuleMovie(PluginModuleBase):
                 actor_name = actor.get('name_ko') or actor.get('name_org', '')
                 if SiteUtil.is_include_hangul(actor_name) == False:
                     actor['name_ko'] = SiteUtil.trans(actor_name, source='en')
+                    actor['name'] = actor['name_ko']
                     #logger.info(f"{actor['name_ko']}")
                 if actor['role'].strip() == '': continue
                 #logger.debug(f"{actor['role']}")                    
                 if actor['role'].strip() != '' and SiteUtil.is_include_hangul(actor['role']) == False:
                     actor['role'] = SiteUtil.trans(actor['role'], source='en')
                     #logger.info(f"{actor['role']}")
+        for actor in data.get('actor', []):
+            if isinstance(actor, dict):
+                actor['name'] = actor.get('name_ko') or actor.get('name_org') or actor.get('name', '')
         return data
 
 
