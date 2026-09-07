@@ -719,4 +719,9 @@ class MetaResponseUtil:
             res['thumb'] = []
             res['fanart'] = []
 
+        # Plex 호환성 보장: actor 리스트의 각 항목에 name 필드 보장
+        for act in res.get('actor', []):
+            if isinstance(act, dict) and not act.get('name'):
+                act['name'] = act.get('name_ko') or act.get('name_org') or ''
+
         return res
